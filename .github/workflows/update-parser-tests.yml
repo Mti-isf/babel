@@ -1,11 +1,11 @@
 name: Update Test262 parser tests
 env:
-  YARN_ENABLE_SCRIPTS: false # disable post-install scripts
+  YARN_ENABLE_SCRIPTS: false
 on:
   workflow_dispatch:
     inputs: {}
   schedule:
-    - cron: "0 0 * * 5"
+    - cron: 
 
 permissions:
   contents: read
