@@ -16,7 +16,7 @@ export function WithStatement(this: Printer, node: t.WithStatement) {
   this.word("with");
   this.space();
   this.token("(");
-  this.print(node.object, node);
+  this.print(node.object);
   this.token(")");
   this.printBlock(node);
 }
@@ -25,7 +25,7 @@ export function IfStatement(this: Printer, node: t.IfStatement) {
   this.word("if");
   this.space();
   this.token("(");
-  this.print(node.test, node);
+  this.print(node.test);
   this.token(")");
   this.space();
 
@@ -37,7 +37,7 @@ export function IfStatement(this: Printer, node: t.IfStatement) {
     this.indent();
   }
 
-  this.printAndIndentOnComments(node.consequent, node);
+  this.printAndIndentOnComments(node.consequent);
 
   if (needsBlock) {
     this.dedent();
@@ -49,7 +49,7 @@ export function IfStatement(this: Printer, node: t.IfStatement) {
     if (this.endsWith(charCodes.rightCurlyBrace)) this.space();
     this.word("else");
     this.space();
-    this.printAndIndentOnComments(node.alternate, node);
+    this.printAndIndentOnComments(node.alternate);
   }
 }
 
@@ -70,9 +70,9 @@ export function ForStatement(this: Printer, node: t.ForStatement) {
   this.token("(");
 
   {
-    const exit = this.enterForStatementInit(true);
+    const exit = this.enterForStatementInit();
     this.tokenContext |= TokenContext.forHead;
-    this.print(node.init, node);
+    this.print(node.init);
     exit();
   }
 
@@ -80,13 +80,13 @@ export function ForStatement(this: Printer, node: t.ForStatement) {
 
   if (node.test) {
     this.space();
-    this.print(node.test, node);
+    this.print(node.test);
   }
   this.token(";");
 
   if (node.update) {
     this.space();
-    this.print(node.update, node);
+    this.print(node.update);
   }
 
   this.token(")");
@@ -97,7 +97,7 @@ export function WhileStatement(this: Printer, node: t.WhileStatement) {
   this.word("while");
   this.space();
   this.token("(");
-  this.print(node.test, node);
+  this.print(node.test);
   this.token(")");
   this.printBlock(node);
 }
@@ -113,17 +113,17 @@ function ForXStatement(this: Printer, node: t.ForXStatement) {
   this.noIndentInnerCommentsHere();
   this.token("(");
   {
-    const exit = isForOf ? null : this.enterForStatementInit(true);
+    const exit = isForOf ? null : this.enterForStatementInit();
     this.tokenContext |= isForOf
       ? TokenContext.forOfHead
       : TokenContext.forInHead;
-    this.print(node.left, node);
+    this.print(node.left);
     exit?.();
   }
   this.space();
   this.word(isForOf ? "of" : "in");
   this.space();
-  this.print(node.right, node);
+  this.print(node.right);
   this.token(")");
   this.printBlock(node);
 }
@@ -134,25 +134,20 @@ export const ForOfStatement = ForXStatement;
 export function DoWhileStatement(this: Printer, node: t.DoWhileStatement) {
   this.word("do");
   this.space();
-  this.print(node.body, node);
+  this.print(node.body);
   this.space();
   this.word("while");
   this.space();
   this.token("(");
-  this.print(node.test, node);
+  this.print(node.test);
   this.token(")");
   this.semicolon();
 }
 
-function printStatementAfterKeyword(
-  printer: Printer,
-  node: t.Node,
-  parent: t.Node,
-  isLabel: boolean,
-) {
+function printStatementAfterKeyword(printer: Printer, node: t.Node) {
   if (node) {
     printer.space();
-    printer.printTerminatorless(node, parent, isLabel);
+    printer.printTerminatorless(node);
   }
 
   printer.semicolon();
@@ -160,35 +155,35 @@ function printStatementAfterKeyword(
 
 export function BreakStatement(this: Printer, node: t.ContinueStatement) {
   this.word("break");
-  printStatementAfterKeyword(this, node.label, node, true);
+  printStatementAfterKeyword(this, node.label);
 }
 
 export function ContinueStatement(this: Printer, node: t.ContinueStatement) {
   this.word("continue");
-  printStatementAfterKeyword(this, node.label, node, true);
+  printStatementAfterKeyword(this, node.label);
 }
 
 export function ReturnStatement(this: Printer, node: t.ReturnStatement) {
   this.word("return");
-  printStatementAfterKeyword(this, node.argument, node, false);
+  printStatementAfterKeyword(this, node.argument);
 }
 
 export function ThrowStatement(this: Printer, node: t.ThrowStatement) {
   this.word("throw");
-  printStatementAfterKeyword(this, node.argument, node, false);
+  printStatementAfterKeyword(this, node.argument);
 }
 
 export function LabeledStatement(this: Printer, node: t.LabeledStatement) {
-  this.print(node.label, node);
+  this.print(node.label);
   this.token(":");
   this.space();
-  this.print(node.body, node);
+  this.print(node.body);
 }
 
 export function TryStatement(this: Printer, node: t.TryStatement) {
   this.word("try");
   this.space();
-  this.print(node.block, node);
+  this.print(node.block);
   this.space();
 
   // Esprima bug puts the catch clause in a `handlers` array.
@@ -197,16 +192,16 @@ export function TryStatement(this: Printer, node: t.TryStatement) {
   // @ts-expect-error todo(flow->ts) should ast node type be updated to support this?
   if (node.handlers) {
     // @ts-expect-error todo(flow->ts) should ast node type be updated to support this?
-    this.print(node.handlers[0], node);
+    this.print(node.handlers[0]);
   } else {
-    this.print(node.handler, node);
+    this.print(node.handler);
   }
 
   if (node.finalizer) {
     this.space();
     this.word("finally");
     this.space();
-    this.print(node.finalizer, node);
+    this.print(node.finalizer);
   }
 }
 
@@ -215,24 +210,24 @@ export function CatchClause(this: Printer, node: t.CatchClause) {
   this.space();
   if (node.param) {
     this.token("(");
-    this.print(node.param, node);
-    this.print(node.param.typeAnnotation, node);
+    this.print(node.param);
+    this.print(node.param.typeAnnotation);
     this.token(")");
     this.space();
   }
-  this.print(node.body, node);
+  this.print(node.body);
 }
 
 export function SwitchStatement(this: Printer, node: t.SwitchStatement) {
   this.word("switch");
   this.space();
   this.token("(");
-  this.print(node.discriminant, node);
+  this.print(node.discriminant);
   this.token(")");
   this.space();
   this.token("{");
 
-  this.printSequence(node.cases, node, {
+  this.printSequence(node.cases, {
     indent: true,
     addNewlines(leading, cas) {
       if (!leading && node.cases[node.cases.length - 1] === cas) return -1;
@@ -246,7 +241,7 @@ export function SwitchCase(this: Printer, node: t.SwitchCase) {
   if (node.test) {
     this.word("case");
     this.space();
-    this.print(node.test, node);
+    this.print(node.test);
     this.token(":");
   } else {
     this.word("default");
@@ -255,7 +250,7 @@ export function SwitchCase(this: Printer, node: t.SwitchCase) {
 
   if (node.consequent.length) {
     this.newline();
-    this.printSequence(node.consequent, node, { indent: true });
+    this.printSequence(node.consequent, { indent: true });
   }
 }
 
@@ -308,7 +303,7 @@ export function VariableDeclaration(
   //       bar = "foo";
   //
 
-  this.printList(node.declarations, node, {
+  this.printList(node.declarations, {
     separator: hasInits
       ? function (this: Printer) {
           this.token(",");
@@ -331,14 +326,14 @@ export function VariableDeclaration(
 }
 
 export function VariableDeclarator(this: Printer, node: t.VariableDeclarator) {
-  this.print(node.id, node);
+  this.print(node.id);
   if (node.definite) this.token("!"); // TS
   // @ts-expect-error todo(flow-ts) Property 'typeAnnotation' does not exist on type 'MemberExpression'.
-  this.print(node.id.typeAnnotation, node);
+  this.print(node.id.typeAnnotation);
   if (node.init) {
     this.space();
     this.token("=");
     this.space();
-    this.print(node.init, node);
+    this.print(node.init);
   }
 }

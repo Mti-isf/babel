@@ -953,32 +953,29 @@ export default abstract class ExpressionParser extends LValParser {
     );
   }
 
-  expectImportAttributesPlugin() {
-    if (!this.hasPlugin("importAssertions")) {
-      this.expectPlugin("importAttributes");
-    }
-  }
-
   finishCallExpression<T extends N.CallExpression | N.OptionalCallExpression>(
     node: Undone<T>,
     optional: boolean,
   ): T {
     if (node.callee.type === "Import") {
       if (node.arguments.length === 2) {
-        if (process.env.BABEL_8_BREAKING) {
-          this.expectImportAttributesPlugin();
-        } else {
-          if (!this.hasPlugin("moduleAttributes")) {
-            this.expectImportAttributesPlugin();
-          }
+        if (
+          process.env.BABEL_8_BREAKING ||
+          !(
+            this.hasPlugin("moduleAttributes") ||
+            this.hasPlugin("importAssertions")
+          )
+        ) {
+          this.expectPlugin("importAttributes");
         }
       }
       if (node.arguments.length === 0 || node.arguments.length > 2) {
         this.raise(Errors.ImportCallArity, node, {
           maxArgumentCount:
             this.hasPlugin("importAttributes") ||
-            this.hasPlugin("importAssertions") ||
-            this.hasPlugin("moduleAttributes")
+            (!process.env.BABEL_8_BREAKING &&
+              (this.hasPlugin("importAssertions") ||
+                this.hasPlugin("moduleAttributes")))
               ? 2
               : 1,
         });
@@ -1018,8 +1015,9 @@ export default abstract class ExpressionParser extends LValParser {
           if (
             dynamicImport &&
             !this.hasPlugin("importAttributes") &&
-            !this.hasPlugin("importAssertions") &&
-            !this.hasPlugin("moduleAttributes")
+            (process.env.BABEL_8_BREAKING ||
+              (!this.hasPlugin("importAssertions") &&
+                !this.hasPlugin("moduleAttributes")))
           ) {
             this.raise(
               Errors.ImportCallArgumentTrailingComma,
@@ -1142,9 +1140,6 @@ export default abstract class ExpressionParser extends LValParser {
 
       case tt.bigint:
         return this.parseBigIntLiteral(this.state.value);
-
-      case tt.decimal:
-        return this.parseDecimalLiteral(this.state.value);
 
       case tt.string:
         return this.parseStringLiteral(this.state.value);
@@ -1285,6 +1280,10 @@ export default abstract class ExpressionParser extends LValParser {
       }
 
       default:
+        if (!process.env.BABEL_8_BREAKING && type === tt.decimal) {
+          return this.parseDecimalLiteral(this.state.value);
+        }
+
         if (tokenIsIdentifier(type)) {
           if (
             this.isContextual(tt._module) &&
@@ -1718,6 +1717,7 @@ export default abstract class ExpressionParser extends LValParser {
     return this.parseLiteral<N.BigIntLiteral>(value, "BigIntLiteral");
   }
 
+  // TODO: Remove this in Babel 8
   parseDecimalLiteral(value: any) {
     return this.parseLiteral<N.DecimalLiteral>(value, "DecimalLiteral");
   }
@@ -2402,9 +2402,6 @@ export default abstract class ExpressionParser extends LValParser {
           case tt.bigint:
             key = this.parseBigIntLiteral(value);
             break;
-          case tt.decimal:
-            key = this.parseDecimalLiteral(value);
-            break;
           case tt.privateName: {
             // the class private key has been handled in parseClassElementName
             const privateKeyLoc = this.state.startLoc;
@@ -2419,6 +2416,11 @@ export default abstract class ExpressionParser extends LValParser {
             break;
           }
           default:
+            if (!process.env.BABEL_8_BREAKING && type === tt.decimal) {
+              key = this.parseDecimalLiteral(value);
+              break;
+            }
+
             this.unexpected();
         }
       }
@@ -2980,12 +2982,20 @@ export default abstract class ExpressionParser extends LValParser {
     node.source = this.parseMaybeAssignAllowIn();
     if (
       this.hasPlugin("importAttributes") ||
-      this.hasPlugin("importAssertions")
+      (!process.env.BABEL_8_BREAKING && this.hasPlugin("importAssertions"))
     ) {
       node.options = null;
     }
     if (this.eat(tt.comma)) {
-      this.expectImportAttributesPlugin();
+      if (
+        process.env.BABEL_8_BREAKING ||
+        !(
+          this.hasPlugin("moduleAttributes") ||
+          this.hasPlugin("importAssertions")
+        )
+      ) {
+        this.expectPlugin("importAttributes");
+      }
       if (!this.match(tt.parenR)) {
         node.options = this.parseMaybeAssignAllowIn();
         this.eat(tt.comma);

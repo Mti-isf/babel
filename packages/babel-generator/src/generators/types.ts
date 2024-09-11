@@ -14,7 +14,7 @@ export function ArgumentPlaceholder(this: Printer) {
 
 export function RestElement(this: Printer, node: t.RestElement) {
   this.token("...");
-  this.print(node.argument, node);
+  this.print(node.argument);
 }
 
 export { RestElement as SpreadElement };
@@ -25,9 +25,9 @@ export function ObjectExpression(this: Printer, node: t.ObjectExpression) {
   this.token("{");
 
   if (props.length) {
-    const exit = this.enterForStatementInit(false);
+    const exit = this.enterDelimited();
     this.space();
-    this.printList(props, node, { indent: true, statement: true });
+    this.printList(props, { indent: true, statement: true });
     this.space();
     exit();
   }
@@ -40,18 +40,18 @@ export function ObjectExpression(this: Printer, node: t.ObjectExpression) {
 export { ObjectExpression as ObjectPattern };
 
 export function ObjectMethod(this: Printer, node: t.ObjectMethod) {
-  this.printJoin(node.decorators, node);
+  this.printJoin(node.decorators);
   this._methodHead(node);
   this.space();
-  this.print(node.body, node);
+  this.print(node.body);
 }
 
 export function ObjectProperty(this: Printer, node: t.ObjectProperty) {
-  this.printJoin(node.decorators, node);
+  this.printJoin(node.decorators);
 
   if (node.computed) {
     this.token("[");
-    this.print(node.key, node);
+    this.print(node.key);
     this.token("]");
   } else {
     // print `({ foo: foo = 5 } = {})` as `({ foo = 5 } = {});`
@@ -61,11 +61,11 @@ export function ObjectProperty(this: Printer, node: t.ObjectProperty) {
       // @ts-expect-error todo(flow->ts) `.name` does not exist on some types in union
       node.key.name === node.value.left.name
     ) {
-      this.print(node.value, node);
+      this.print(node.value);
       return;
     }
 
-    this.print(node.key, node);
+    this.print(node.key);
 
     // shorthand!
     if (
@@ -80,7 +80,7 @@ export function ObjectProperty(this: Printer, node: t.ObjectProperty) {
 
   this.token(":");
   this.space();
-  this.print(node.value, node);
+  this.print(node.value);
 }
 
 export function ArrayExpression(this: Printer, node: t.ArrayExpression) {
@@ -89,13 +89,13 @@ export function ArrayExpression(this: Printer, node: t.ArrayExpression) {
 
   this.token("[");
 
-  const exit = this.enterForStatementInit(false);
+  const exit = this.enterDelimited();
 
   for (let i = 0; i < elems.length; i++) {
     const elem = elems[i];
     if (elem) {
       if (i > 0) this.space();
-      this.print(elem, node);
+      this.print(elem);
       if (i < len - 1) this.token(",");
     } else {
       // If the array expression ends with a hole, that hole
@@ -145,7 +145,7 @@ export function RecordExpression(this: Printer, node: t.RecordExpression) {
 
   if (props.length) {
     this.space();
-    this.printList(props, node, { indent: true, statement: true });
+    this.printList(props, { indent: true, statement: true });
     this.space();
   }
   this.token(endToken);
@@ -180,7 +180,7 @@ export function TupleExpression(this: Printer, node: t.TupleExpression) {
     const elem = elems[i];
     if (elem) {
       if (i > 0) this.space();
-      this.print(elem, node);
+      this.print(elem);
       if (i < len - 1) this.token(",");
     }
   }
@@ -237,6 +237,7 @@ export function BigIntLiteral(this: Printer, node: t.BigIntLiteral) {
   this.word(node.value + "n");
 }
 
+// TODO: Remove in Babel 8
 export function DecimalLiteral(this: Printer, node: t.DecimalLiteral) {
   const raw = this.getPossibleRaw(node);
   if (!this.format.minified && raw !== undefined) {
@@ -268,14 +269,14 @@ export function PipelineTopicExpression(
   this: Printer,
   node: t.PipelineTopicExpression,
 ) {
-  this.print(node.expression, node);
+  this.print(node.expression);
 }
 
 export function PipelineBareFunction(
   this: Printer,
   node: t.PipelineBareFunction,
 ) {
-  this.print(node.callee, node);
+  this.print(node.callee);
 }
 
 export function PipelinePrimaryTopicReference(this: Printer) {

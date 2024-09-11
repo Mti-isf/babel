@@ -5,10 +5,10 @@ export function File(this: Printer, node: t.File) {
   if (node.program) {
     // Print this here to ensure that Program node 'leadingComments' still
     // get printed after the hashbang.
-    this.print(node.program.interpreter, node);
+    this.print(node.program.interpreter);
   }
 
-  this.print(node.program, node);
+  this.print(node.program);
 }
 
 export function Program(this: Printer, node: t.Program) {
@@ -20,7 +20,7 @@ export function Program(this: Printer, node: t.Program) {
   const directivesLen = node.directives?.length;
   if (directivesLen) {
     const newline = node.body.length ? 2 : 1;
-    this.printSequence(node.directives, node, {
+    this.printSequence(node.directives, {
       trailingCommentsLineOffset: newline,
     });
     if (!node.directives[directivesLen - 1].trailingComments?.length) {
@@ -28,16 +28,17 @@ export function Program(this: Printer, node: t.Program) {
     }
   }
 
-  this.printSequence(node.body, node);
+  this.printSequence(node.body);
 }
 
 export function BlockStatement(this: Printer, node: t.BlockStatement) {
   this.token("{");
+  const exit = this.enterDelimited();
 
   const directivesLen = node.directives?.length;
   if (directivesLen) {
     const newline = node.body.length ? 2 : 1;
-    this.printSequence(node.directives, node, {
+    this.printSequence(node.directives, {
       indent: true,
       trailingCommentsLineOffset: newline,
     });
@@ -46,15 +47,14 @@ export function BlockStatement(this: Printer, node: t.BlockStatement) {
     }
   }
 
-  const exit = this.enterForStatementInit(false);
-  this.printSequence(node.body, node, { indent: true });
-  exit();
+  this.printSequence(node.body, { indent: true });
 
+  exit();
   this.rightBrace(node);
 }
 
 export function Directive(this: Printer, node: t.Directive) {
-  this.print(node.value, node);
+  this.print(node.value);
   this.semicolon();
 }
 

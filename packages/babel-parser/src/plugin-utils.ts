@@ -123,13 +123,17 @@ export function validatePlugins(pluginsMap: Map<string, any>) {
       }
     }
   }
-  if (
-    pluginsMap.has("importAttributes") &&
-    pluginsMap.has("importAssertions")
-  ) {
-    throw new Error(
-      "Cannot combine importAssertions and importAttributes plugins.",
-    );
+  if (pluginsMap.has("importAssertions")) {
+    if (process.env.BABEL_8_BREAKING) {
+      throw new Error(
+        "`importAssertions` has been removed in Babel 8, please use `importAttributes` parser plugin, or `@babel/plugin-syntax-import-attributes`." +
+          " To use the non-standard `assert` syntax you can enable the `deprecatedAssertSyntax: true` option of those plugins.",
+      );
+    } else if (pluginsMap.has("importAttributes")) {
+      throw new Error(
+        "Cannot combine importAssertions and importAttributes plugins.",
+      );
+    }
   }
 
   if (pluginsMap.has("recordAndTuple")) {
@@ -178,6 +182,20 @@ export function validatePlugins(pluginsMap: Map<string, any>) {
         " representing the last proposal update. Currently, the" +
         " only supported value is '2023-07'.",
     );
+  }
+
+  if (process.env.BABEL_8_BREAKING) {
+    if (pluginsMap.has("decimal")) {
+      throw new Error(
+        "The 'decimal' plugin has been removed in Babel 8. Please remove it from your configuration.",
+      );
+    }
+    if (pluginsMap.has("importReflection")) {
+      throw new Error(
+        "The 'importReflection' plugin has been removed in Babel 8. Use 'sourcePhaseImports' instead, and " +
+          "replace 'import module' with 'import source' in your code.",
+      );
+    }
   }
 }
 

@@ -57,7 +57,7 @@ function exec(executable, args, cwd, inheritStdio = true, noExit = false) {
         )
       );
       if (!noExit) {
-        // eslint-disable-next-line no-process-exit
+        // eslint-disable-next-line n/no-process-exit
         process.exit(error.exitCode);
       }
     }
@@ -401,7 +401,7 @@ function eslint(...extraArgs) {
         err = e;
       }
     }
-    // eslint-disable-next-line no-process-exit
+    // eslint-disable-next-line n/no-process-exit
     if (err) process.exit(err.exitCode);
   }
 }
@@ -409,17 +409,23 @@ function eslint(...extraArgs) {
 target["lint"] = function () {
   env(() => target["tscheck"](), { TSCHECK_SILENT: "true" });
   eslint();
+  target["lint-prettier"]();
 };
 
 target["lint-ci"] = function () {
   target["tscheck"]();
   eslint();
+  target["lint-prettier"]();
   target["prepublish-prepare-dts-no-clean"]();
 };
 
+target["lint-prettier"] = function () {
+  yarn(["prettier", ".", "--check"]);
+};
+
 target["fix"] = function () {
-  target["fix-json"]();
   target["fix-js"]();
+  target["fix-prettier"]();
 };
 
 target["fix-js"] = function () {
@@ -427,14 +433,8 @@ target["fix-js"] = function () {
   eslint("--fix");
 };
 
-target["fix-json"] = function () {
-  yarn([
-    "prettier",
-    `{${SOURCES.join(",")}}/*/test/fixtures/**/options.json`,
-    "--write",
-    "--loglevel",
-    "warn",
-  ]);
+target["fix-prettier"] = function () {
+  yarn(["prettier", ".", "--write"]);
 };
 
 target["watch"] = function () {
@@ -543,7 +543,7 @@ target["new-version-checklist"] = function () {
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     `.trim()
     );
-    // eslint-disable-next-line no-process-exit
+    // eslint-disable-next-line n/no-process-exit
     process.exit(1);
   }
 };

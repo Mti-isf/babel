@@ -50,7 +50,7 @@ const buildTypingsWatchGlob = [
 
 // env vars from the cli are always strings, so !!ENV_VAR returns true for "false"
 function bool(value) {
-  return value && value !== "false" && value !== "0";
+  return Boolean(value) && value !== "false" && value !== "0";
 }
 
 /**
@@ -383,7 +383,7 @@ function buildRollup(packages, buildStandalone) {
             buildStandalone && rollupStandaloneInternals(),
             rollupBabelSource(),
             process.env.STRIP_BABEL_8_FLAG &&
-              rollupDependencyCondition(!!bool(process.env.BABEL_8_BREAKING)),
+              rollupDependencyCondition(bool(process.env.BABEL_8_BREAKING)),
             rollupReplace({
               preventAssignment: true,
               values: {
@@ -603,6 +603,13 @@ function buildRollupDts(packages) {
     const bundle = await rollup({
       input,
       plugins: [
+        {
+          transform: code =>
+            code.replace(
+              /type BABEL_8_BREAKING\s*=\s*boolean/g,
+              `type BABEL_8_BREAKING = ${bool(process.env.BABEL_8_BREAKING)}`
+            ),
+        },
         bool(process.env.BABEL_8_BREAKING) ? rollupDts() : rollupDts5(),
       ],
       external,
@@ -641,7 +648,9 @@ function buildRollupDts(packages) {
     build(
       "packages/babel-parser/typings/babel-parser.source.d.ts",
       "packages/babel-parser/typings/babel-parser.d.ts",
-      "// This file is auto-generated! Do not modify it directly.\n/* eslint-disable @typescript-eslint/consistent-type-imports, prettier/prettier */",
+      "// This file is auto-generated! Do not modify it directly.\n" +
+        // @typescript-eslint/no-redundant-type-constituents can be removed once we drop the IF_BABEL_7 type
+        "/* eslint-disable @typescript-eslint/consistent-type-imports, @typescript-eslint/no-redundant-type-constituents */",
       "packages/babel-parser"
     )
   );

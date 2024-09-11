@@ -134,9 +134,12 @@ jobs:
       - name: Generate readmes
         run: |
           make generate-readme
+      - name: Cleanup fixtures
+        run: |
+          node scripts/cleanup-fixtures.js
       - name: Ensure cwd does not contain uncommitted changes
         run: |
-          node ./scripts/assert-dir-git-clean.js build
+          node ./scripts/assert-dir-git-clean.js "\`make build\` and \`node scripts/cleanup-fixtures.js\`"
       - name: Prepare artifacts
         run: |
           ./scripts/get-artifact-files.sh | tar --null -cvf babel-artifact.tar --files-from=-
@@ -248,6 +251,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+      - name: Ensure that @babel/node's list of node flags is up to date
+        run: |
+          node ./packages/babel-node/scripts/list-node-flags.js
       - name: Test on node.js ${{ matrix.node-version }}
         # Todo(Babel 8): Jest execution path is hardcoded because Yarn 2 does not support node 6
         run: |
@@ -634,6 +640,9 @@ jobs:
         run: |
           cd babel-test262-runner
           node lib/run-tests I_AM_SURE | tee ~/test262-${{ matrix.chunk }}.tap
+        # Specify bash to enable pipefail, so that "| tee" does not suppress the failure exit code.
+        # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsshell
+        shell: bash
         env:
           BABEL_PATH: ".."
           TEST262_PATH: ../build/test262

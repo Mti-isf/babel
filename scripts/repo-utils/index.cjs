@@ -6,6 +6,8 @@ const { fileURLToPath } = require("url");
 const { createRequire } = require("module");
 const semver = require("semver");
 
+exports.repoRoot = path.resolve(__dirname, "../../");
+
 let USE_ESM = false;
 try {
   const type = readFileSync(
@@ -16,7 +18,7 @@ try {
 } catch (_) {}
 
 function bool(value) {
-  return value && value !== "false" && value !== "0";
+  return Boolean(value) && value !== "false" && value !== "0";
 }
 exports.USE_ESM = USE_ESM;
 exports.IS_BABEL_8 = () => bool(process.env.BABEL_8_BREAKING);

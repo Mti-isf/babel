@@ -4,6 +4,7 @@ import {
   isLiteral,
   isMemberExpression,
   isNewExpression,
+  isPattern,
 } from "@babel/types";
 import type * as t from "@babel/types";
 import { TokenContext } from "../node/index.ts";
@@ -23,7 +24,7 @@ export function UnaryExpression(this: Printer, node: t.UnaryExpression) {
     this.token(operator);
   }
 
-  this.print(node.argument, node);
+  this.print(node.argument);
 }
 
 export function DoExpression(this: Printer, node: t.DoExpression) {
@@ -33,7 +34,7 @@ export function DoExpression(this: Printer, node: t.DoExpression) {
   }
   this.word("do");
   this.space();
-  this.print(node.body, node);
+  this.print(node.body);
 }
 
 export function ParenthesizedExpression(
@@ -41,16 +42,18 @@ export function ParenthesizedExpression(
   node: t.ParenthesizedExpression,
 ) {
   this.token("(");
-  this.print(node.expression, node);
+  const exit = this.enterDelimited();
+  this.print(node.expression);
+  exit();
   this.rightParens(node);
 }
 
 export function UpdateExpression(this: Printer, node: t.UpdateExpression) {
   if (node.prefix) {
     this.token(node.operator);
-    this.print(node.argument, node);
+    this.print(node.argument);
   } else {
-    this.printTerminatorless(node.argument, node, true);
+    this.print(node.argument, true);
     this.token(node.operator);
   }
 }
@@ -59,15 +62,15 @@ export function ConditionalExpression(
   this: Printer,
   node: t.ConditionalExpression,
 ) {
-  this.print(node.test, node);
+  this.print(node.test);
   this.space();
   this.token("?");
   this.space();
-  this.print(node.consequent, node);
+  this.print(node.consequent);
   this.space();
   this.token(":");
   this.space();
-  this.print(node.alternate, node);
+  this.print(node.alternate);
 }
 
 export function NewExpression(
@@ -77,7 +80,7 @@ export function NewExpression(
 ) {
   this.word("new");
   this.space();
-  this.print(node.callee, node);
+  this.print(node.callee);
   if (
     this.format.minified &&
     node.arguments.length === 0 &&
@@ -89,22 +92,22 @@ export function NewExpression(
     return;
   }
 
-  this.print(node.typeArguments, node); // Flow
-  this.print(node.typeParameters, node); // TS
+  this.print(node.typeArguments); // Flow
+  this.print(node.typeParameters); // TS
 
   if (node.optional) {
     // TODO: This can never happen
     this.token("?.");
   }
   this.token("(");
-  const exit = this.enterForStatementInit(false);
-  this.printList(node.arguments, node);
+  const exit = this.enterDelimited();
+  this.printList(node.arguments);
   exit();
   this.rightParens(node);
 }
 
 export function SequenceExpression(this: Printer, node: t.SequenceExpression) {
-  this.printList(node.expressions, node);
+  this.printList(node.expressions);
 }
 
 export function ThisExpression(this: Printer) {
@@ -129,7 +132,7 @@ export function _shouldPrintDecoratorsBeforeExport(
 
 export function Decorator(this: Printer, node: t.Decorator) {
   this.token("@");
-  this.print(node.expression, node);
+  this.print(node.expression);
   this.newline();
 }
 
@@ -140,7 +143,7 @@ export function OptionalMemberExpression(
   let { computed } = node;
   const { optional, property } = node;
 
-  this.print(node.object, node);
+  this.print(node.object);
 
   if (!computed && isMemberExpression(property)) {
     throw new TypeError("Got a MemberExpression for MemberExpression property");
@@ -156,13 +159,13 @@ export function OptionalMemberExpression(
 
   if (computed) {
     this.token("[");
-    this.print(property, node);
+    this.print(property);
     this.token("]");
   } else {
     if (!optional) {
       this.token(".");
     }
-    this.print(property, node);
+    this.print(property);
   }
 }
 
@@ -170,31 +173,31 @@ export function OptionalCallExpression(
   this: Printer,
   node: t.OptionalCallExpression,
 ) {
-  this.print(node.callee, node);
+  this.print(node.callee);
 
-  this.print(node.typeParameters, node); // TS
+  this.print(node.typeParameters); // TS
 
   if (node.optional) {
     this.token("?.");
   }
 
-  this.print(node.typeArguments, node); // Flow
+  this.print(node.typeArguments); // Flow
 
   this.token("(");
-  const exit = this.enterForStatementInit(false);
-  this.printList(node.arguments, node);
+  const exit = this.enterDelimited();
+  this.printList(node.arguments);
   exit();
   this.rightParens(node);
 }
 
 export function CallExpression(this: Printer, node: t.CallExpression) {
-  this.print(node.callee, node);
+  this.print(node.callee);
 
-  this.print(node.typeArguments, node); // Flow
-  this.print(node.typeParameters, node); // TS
+  this.print(node.typeArguments); // Flow
+  this.print(node.typeParameters); // TS
   this.token("(");
-  const exit = this.enterForStatementInit(false);
-  this.printList(node.arguments, node);
+  const exit = this.enterDelimited();
+  this.printList(node.arguments);
   exit();
   this.rightParens(node);
 }
@@ -208,7 +211,7 @@ export function AwaitExpression(this: Printer, node: t.AwaitExpression) {
 
   if (node.argument) {
     this.space();
-    this.printTerminatorless(node.argument, node, false);
+    this.printTerminatorless(node.argument);
   }
 }
 
@@ -220,12 +223,12 @@ export function YieldExpression(this: Printer, node: t.YieldExpression) {
     if (node.argument) {
       this.space();
       // line terminators are allowed after yield*
-      this.print(node.argument, node);
+      this.print(node.argument);
     }
   } else {
     if (node.argument) {
       this.space();
-      this.printTerminatorless(node.argument, node, false);
+      this.printTerminatorless(node.argument);
     }
   }
 }
@@ -239,43 +242,44 @@ export function ExpressionStatement(
   node: t.ExpressionStatement,
 ) {
   this.tokenContext |= TokenContext.expressionStatement;
-  this.print(node.expression, node);
+  this.print(node.expression);
   this.semicolon();
 }
 
 export function AssignmentPattern(this: Printer, node: t.AssignmentPattern) {
-  this.print(node.left, node);
-  if (node.left.type === "Identifier") {
+  this.print(node.left);
+  if (node.left.type === "Identifier" || isPattern(node.left)) {
     if (node.left.optional) this.token("?");
-    this.print(node.left.typeAnnotation, node);
+    this.print(node.left.typeAnnotation);
   }
   this.space();
   this.token("=");
   this.space();
-  this.print(node.right, node);
+  this.print(node.right);
 }
 
 export function AssignmentExpression(
   this: Printer,
   node: t.AssignmentExpression,
 ) {
-  this.print(node.left, node);
+  this.print(node.left);
 
   this.space();
   if (node.operator === "in" || node.operator === "instanceof") {
     this.word(node.operator);
   } else {
     this.token(node.operator);
+    this._endsWithDiv = node.operator === "/";
   }
   this.space();
 
-  this.print(node.right, node);
+  this.print(node.right);
 }
 
 export function BindExpression(this: Printer, node: t.BindExpression) {
-  this.print(node.object, node);
+  this.print(node.object);
   this.token("::");
-  this.print(node.callee, node);
+  this.print(node.callee);
 }
 
 export {
@@ -284,7 +288,7 @@ export {
 };
 
 export function MemberExpression(this: Printer, node: t.MemberExpression) {
-  this.print(node.object, node);
+  this.print(node.object);
 
   if (!node.computed && isMemberExpression(node.property)) {
     throw new TypeError("Got a MemberExpression for MemberExpression property");
@@ -297,26 +301,26 @@ export function MemberExpression(this: Printer, node: t.MemberExpression) {
   }
 
   if (computed) {
-    const exit = this.enterForStatementInit(false);
+    const exit = this.enterDelimited();
     this.token("[");
-    this.print(node.property, node);
+    this.print(node.property);
     this.token("]");
     exit();
   } else {
     this.token(".");
-    this.print(node.property, node);
+    this.print(node.property);
   }
 }
 
 export function MetaProperty(this: Printer, node: t.MetaProperty) {
-  this.print(node.meta, node);
+  this.print(node.meta);
   this.token(".");
-  this.print(node.property, node);
+  this.print(node.property);
 }
 
 export function PrivateName(this: Printer, node: t.PrivateName) {
   this.token("#");
-  this.print(node.id, node);
+  this.print(node.id);
 }
 
 export function V8IntrinsicIdentifier(
@@ -336,7 +340,7 @@ export function ModuleExpression(this: Printer, node: t.ModuleExpression) {
   if (body.body.length || body.directives.length) {
     this.newline();
   }
-  this.print(body, node);
+  this.print(body);
   this.dedent();
   this.rightBrace(node);
 }
