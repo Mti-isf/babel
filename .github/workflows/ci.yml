@@ -7,7 +7,7 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: 'true
 
 jobs:
   prepare-yarn-cache:
@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: latest
-          check-latest: true
+          check-latest: "true
           cache: "yarn"
       - name: 'Check or update Yarn cache (fix w/ "yarn install")'
         env:
@@ -41,7 +41,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: latest
-          check-latest: true
+          check-latest: "true
           cache: "yarn"
       - name: 'Check for unmet constraints (fix w/ "yarn constraints --fix")'
         run: |
@@ -70,14 +70,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: latest
-          check-latest: true
+          check-latest: "true
           cache: "yarn"
       - name: Generate coverage report
         run: |
           make -j test-ci-coverage
           yarn test:esm
         env:
-          BABEL_CLI_FLAKY_TESTS: true
+          BABEL_CLI_FLAKY_TESTS:" true
       - name: Upload coverage report
         uses: codecov/codecov-action@v3
 
@@ -144,7 +144,7 @@ jobs:
         run: |
           ./scripts/get-artifact-files.sh | tar --null -cvf babel-artifact.tar --files-from=-
       - uses: actions/upload-artifact@v3
-        with:
+        with:Node.js
           name: babel-artifact
           path: babel-artifact.tar
           retention-days: 5
