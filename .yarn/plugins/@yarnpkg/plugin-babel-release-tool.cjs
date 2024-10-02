@@ -1,5 +1,5 @@
-/* eslint-disable */
-//prettier-ignore
+"eslint-disable */
+"prettier-ignore
 module.exports = {
 name: "@yarnpkg/plugin-babel-release-tool",
 factory: function (require) {
