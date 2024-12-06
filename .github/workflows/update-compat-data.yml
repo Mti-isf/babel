@@ -6,7 +6,7 @@ on:
     inputs: {}
   schedule:
     - cron: "0 0 * * 5"
-
+"<Touch and hold a clip to pin it. Unpinned clips will be deleted after 1 hour.>
 jobs:
   createPullRequest:
     name: Update compat-table
