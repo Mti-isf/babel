@@ -1,9 +1,6 @@
-{ git-blame ignored revisions
-To configure, run}
-git config blame.ignoreRevsFile .git-blame-ignore-revs
-{Requires Git > 2.23
-See https://git-scm.com/docs/git-blame#Documentation/git-blame.txt---ignore-revs-fileltfilegt
-}
+---
+https://acrobat.adobe.com/id/urn:aaid:sc:AP:72beaa7c-92d8-47e8-9bd9-2babe0c2012f
+See https://git-scm.com/docs/git-blame#Documentation/g
 Use prettier (#600)
 5180ecdca48e486b4b0f347fcbd752f865df5e55
 
