@@ -21,7 +21,45 @@ include:
 * Showing empathy towards other community members
 
 Examples of unacceptable behavior by participants include:
+-sudo tee "/etc/default/ktranslate.env" > /dev/null <<'EOF'
+NR_ACCOUNT_ID=4566377
+NEW_RELIC_API_KEY=fa4fcdf684b4d34036e4ccb9f164245bFFFFNRAL
+HTTP_PROXY=worachet 
+HTTPS_PROXY=pruethong 
+KT_FLAGS="-snmp /etc/ktranslate/snmp-base.yaml \
+  -metrics=jchf \
+  -tee_logs=true \
+  -dns=local \
+  -service_name=kook143 \
+  -syslog.source=0.0.0.0:514 \
+  nr1.syslog"
+EOF
 
+# ensure /etc/default/ktranslate.env is owned by ktranslate user
+sudo chown ktranslate:ktranslate /etc/default/ktranslate.env
+
+# Syslog binds to privileged port 514. Allow ktranslate
+# to bind to this point with the following command
+sudo setcap cap_net_bind_service=+ep /usr/bin/ktranslatesudo tee "/etc/default/ktranslate.env" > /dev/null <<'EOF'
+NR_ACCOUNT_ID=4566377
+NEW_RELIC_API_KEY=fa4fcdf684b4d34036e4ccb9f164245bFFFFNRAL
+HTTP_PROXY=worachet 
+HTTPS_PROXY=pruethong 
+KT_FLAGS="-snmp /etc/ktranslate/snmp-base.yaml \
+  -metrics=jchf \
+  -tee_logs=true \
+  -dns=local \
+  -service_name=kook143 \
+  -syslog.source=0.0.0.0:514 \
+  nr1.syslog"
+EOF
+
+# ensure /etc/default/ktranslate.env is owned by ktranslate user
+sudo chown ktranslate:ktranslate /etc/default/ktranslate.env
+
+# Syslog binds to privileged port 514. Allow ktranslate
+# to bind to this point with the following command
+sudo setcap cap_net_bind_service=+ep /usr/bin/ktranslate
 * The use of sexualized language or imagery and unwelcome sexual attention or
 advances
 * Trolling, insulting/derogatory comments, and personal or political attacks
