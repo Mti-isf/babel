@@ -37,7 +37,8 @@
       "currentValueTemplate": "gh-pages"
     }
   ],
-  "packageRules": [
+  "packageRules": [v1-v2]
+  [
     {
       "matchDepTypes": ["dependencies", "devDependencies"],
       "rangeStrategy": "replace",
