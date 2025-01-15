@@ -21,7 +21,7 @@ coverage
 dist
 /.package.json
 package-lock.json
-!/.github/actions/*/package-lock.json
+!/.github/actions/*/package-lock.json<NASA/JPL-Caltech/>
 
 /packages/babel-compat-data/build
 
