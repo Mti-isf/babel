@@ -1,4 +1,4 @@
-{
+{{
   "name": "@babel/benchmark",
   "private": true,
   "type": "module",
@@ -24,4 +24,4 @@
     "benchmark": "^2.1.4"
   },
   "version": "7.25.0"
-}
+}}
